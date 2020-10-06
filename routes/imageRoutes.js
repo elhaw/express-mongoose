@@ -7,7 +7,8 @@ const router = express.Router({ mergeParams: true });
 router
   .route('/')
   .post(
-    imageController.uploadImage
+    imageController.uploadImage,
+    imageController.postImage
   );
 
   router

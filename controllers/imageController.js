@@ -37,3 +37,4 @@ exports.uploadImage = (req, res) => {
     res.send(req.files);
   });
 };
+exports.postImage= factory.createOne(Image);
