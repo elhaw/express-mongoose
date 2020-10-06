@@ -14,6 +14,10 @@ router
 
   router
   .route('/:id')
-  .get(postController.getPost);
+  .get(postController.getPost)
+  .patch(
+    postController.uploadImages,
+    postController.updatePost
+  )
 
 module.exports = router;

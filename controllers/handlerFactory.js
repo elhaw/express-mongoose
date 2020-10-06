@@ -30,7 +30,6 @@ exports.getOne = (Model, popOptions) =>
       },
     });
   });
-<<<<<<< HEAD
 
   exports.updateOne = Model =>
   catchAsync(async (req, res, next) => {
@@ -50,5 +49,3 @@ exports.getOne = (Model, popOptions) =>
       }
     });
   });
-=======
->>>>>>> a33549d03df4193856183ef5e43b75a49342112f

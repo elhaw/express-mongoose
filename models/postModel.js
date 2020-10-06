@@ -3,18 +3,12 @@ const Image  = require('./imageModel')
 const postSchema = new mongoose.Schema(
   {
     caption: String,
+    images: [{
+      type: String,
+      required: [true, 'A post must have images']
+    }],
   },
-  {
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
-  }
 );
-
-postSchema.virtual("images", {
-  ref: Image,
-  foreignField: "post",
-  localField: "_id",
-});
 
 const Post = mongoose.model("Post", postSchema);
 module.exports = Post;
