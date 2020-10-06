@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const Image  = require('./imageModel')
 const postSchema = new mongoose.Schema(
   {
     caption: String,

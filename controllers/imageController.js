@@ -33,7 +33,7 @@ exports.uploadImage = (req, res) => {
       res.send(err);
     }
     // storre images in database
-
+    
     res.send(req.files);
   });
 };
