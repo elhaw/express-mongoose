@@ -1,17 +1,10 @@
-const cloudinary = require("cloudinary");
-const multer = require("multer");
+const cloudinary = require('cloudinary');
+const multer = require('multer');
 const factory = require('./handlerFactory');
 const AppError = require('./../util/appError');
 const catchAsync = require('./../util/catchAsync');
 const Post = require('../models/postModel');
-const cloudinaryStorage = require("../util/cloudinary-custom-storage");
-
-cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.API_KEY,
-  api_secret: process.env.API_SECRET,
-});
-
+const cloudinaryStorage = require('../util/cloudinary-custom-storage');
 
 const multerStorage = multer.memoryStorage();
 
@@ -24,14 +17,12 @@ const multerFilter = (req, file, cb) => {
 };
 
 const upload = multer({
-  storage: multerStorage,
+  storage: cloudinaryStorage,
   fileFilter: multerFilter
 });
 
-exports.uploadImages = upload.fields([
-  { name: 'images', maxCount: 2 }
-]);
+exports.uploadImages = upload.fields([{ name: 'images', maxCount: 2 }]);
 
-exports.getPost = factory.getOne(Post);
+exports.getPost = factory.getOne(Post, 'images');
 exports.createPost = factory.createOne(Post);
 exports.updatePost = factory.updateOne(Post);
