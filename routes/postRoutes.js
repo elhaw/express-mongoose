@@ -3,7 +3,7 @@ const postController = require('../controllers/postController');
 
 const router = express.Router();
 
-router.route('/').post(postController.createPost);
+router.route('/').post(postController.uploadImages, postController.createPost);
 
 router
   .route('/:id')
