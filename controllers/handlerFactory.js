@@ -5,6 +5,9 @@ const { Images } = require('../models/imageModel');
 const User = require('../models/userMode');
 exports.createOne = Model =>
   catchAsync(async (req, res, next) => {
+    if (!req.files.images) {
+      return next(new AppError('Please Upload atleast one image', 400));
+    }
     const images = req.files.images.map(image => {
       return {
         name: image.originalname.replace(' ', ''),
