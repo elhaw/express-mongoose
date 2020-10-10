@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const User = require('../models/userMode');
 const ActiveEmails = require('../models/activeEmailsModel');
 const { googleAuthURL, oauth2Client } = require('../util/googleAuth');
@@ -5,36 +6,47 @@ const AppError = require('../util/appError');
 const catchAsync = require('../util/catchAsync');
 
 // todo:
-//		1- Error Handling (Handling promise rejections)
+//		1- Improve Error Handling of the promises to suit production enviroment
 //		2- More secure way of stopping direct requests to /google/callback
 //		3- Improving/Iterating on the security gates of the protect function
-//		4- Encrypting the google id before storing it into the database
 
 const exchangeCodeForTokens = (code) => {
-	return new Promise(async (resolve) => {
-		const authCode = code;
-		const { tokens } = await oauth2Client.getToken(authCode);
-		oauth2Client.setCredentials(tokens);
-		resolve(tokens);
+	return new Promise(async (resolve, reject) => {
+		try {
+			const authCode = code;
+			const { tokens } = await oauth2Client.getToken(authCode);
+			oauth2Client.setCredentials(tokens);
+			resolve(tokens);
+		} catch (err) {
+			reject(err);
+		}
 	});
 };
 
 const verifyIdToken = (idToken) => {
-	return new Promise(async (resolve) => {
-		const clientId = process.env.GOOGLE_ID;
-		const ticket = await oauth2Client.verifyIdToken({
-			idToken,
-			audience: clientId,
-		});
-		resolve(ticket);
+	return new Promise(async (resolve, reject) => {
+		try {
+			const clientId = process.env.GOOGLE_ID;
+			const ticket = await oauth2Client.verifyIdToken({
+				idToken,
+				audience: clientId,
+			});
+			resolve(ticket);
+		} catch (err) {
+			reject(err);
+		}
 	});
 };
 
 const getUserInfo = (id_token) => {
-	return new Promise(async (resolve) => {
-		const ticket = await verifyIdToken(id_token);
-		const payload = ticket.getPayload();
-		resolve(payload);
+	return new Promise(async (resolve, reject) => {
+		try {
+			const ticket = await verifyIdToken(id_token);
+			const payload = ticket.getPayload();
+			resolve(payload);
+		} catch (err) {
+			reject(err);
+		}
 	});
 };
 
@@ -50,9 +62,10 @@ exports.googleAuth = async (req, res, next) => {
 		);
 	const { id_token } = await exchangeCodeForTokens(req.query.code);
 	const { name, email, sub } = await getUserInfo(id_token);
-	if (!(await User.findOne({ googleId: sub }))) {
+	const hashedId = crypto.createHash('sha256').update(sub).digest('hex');
+	if (!(await User.findOne({ googleId: hashedId }))) {
 		if (await ActiveEmails.findOne({ email }))
-			await User.create({ name, email, googleId: sub });
+			await User.create({ name, email, googleId: hashedId });
 		else
 			return next(
 				new AppError(
@@ -61,7 +74,7 @@ exports.googleAuth = async (req, res, next) => {
 				)
 			);
 	}
-	res.json(id_token);
+	res.json({ id_token });
 };
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -75,7 +88,8 @@ exports.protect = catchAsync(async (req, res, next) => {
 		);
 
 	const { sub } = await getUserInfo(id_token);
-	const user = await User.findOne({ googleId: sub });
+	const hashedId = crypto.createHash('sha256').update(sub).digest('hex');
+	const user = await User.findOne({ googleId: hashedId });
 
 	if (!user)
 		return next(
