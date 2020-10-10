@@ -4,8 +4,8 @@ const activeEmailsController = require('../controllers/activeEmailsController');
 
 const router = express.Router();
 
-router.route('/auth/googlelogin').post(authController.googleLogin);
-
-router.route('/').post(activeEmailsController.addActiveEmail);
+router
+	.route('/activated')
+	.post(authController.protect, activeEmailsController.addActiveEmail);
 
 module.exports = router;

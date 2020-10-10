@@ -25,7 +25,6 @@ exports.createOne = Model =>
       images: createdImages._id,
       author: user._id
     });
-
     res.status(201).json({
       status: 'success',
       data: doc
