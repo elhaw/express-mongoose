@@ -1,8 +1,9 @@
 const catchAsync = require('../util/catchAsync');
 const AppError = require('../util/appError');
 const { Image } = require('../models/imageModel');
-const { Images } = require('../models/imageModel');
+const { Resources } = require('../models/imageModel');
 const User = require('../models/userMode');
+const Post = require('../models/postModel');
 exports.createOne = Model =>
   catchAsync(async (req, res, next) => {
     if (!req.files.images) {
@@ -16,16 +17,25 @@ exports.createOne = Model =>
       };
     });
     const image = await Image.create(images);
-    const createdImages = await Images.create({ images: image });
+    const resources = await Resources.create({ images: image });
     const caption = req.body.caption;
 
     const user = await User.create({ name: 'asdadasd', email: 'asdasd' });
     const doc = await Model.create({
       caption,
-      images: createdImages._id,
+      resources: resources._id,
       author: user._id
     });
-
+    resources['images'].forEach(async img => {
+      const image = await Image.findByIdAndUpdate(
+        img,
+        {
+          linkedPost: doc._id
+        },
+        { new: true }
+      ).exec();
+      console.log(image);
+    });
     res.status(201).json({
       status: 'success',
       data: doc
@@ -35,7 +45,8 @@ exports.createOne = Model =>
 exports.getOne = (Model, popOptions) =>
   catchAsync(async (req, res, next) => {
     let query = Model.findById(req.params.id);
-    if (popOptions) query = query.populate(popOptions).populate('author');
+    if (popOptions)
+      query = query.populate(popOptions).populate('author').exec();
     const doc = await query;
 
     if (!doc) {
@@ -65,4 +76,14 @@ exports.updateOne = Model =>
         data: doc
       }
     });
+  });
+
+exports.getAll = Model =>
+  catchAsync(async (req, res, next) => {
+    const data = await Post.find().exec();
+    if (!data) {
+      return next(new AppError('No Polls found with that ID', 404));
+    } else {
+      res.status(200).json({ data });
+    }
   });

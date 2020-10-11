@@ -5,9 +5,9 @@ const postSchema = new mongoose.Schema(
       type: String,
       required: true
     },
-    images: {
+    resources: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'images',
+      ref: 'resources',
       required: true
     },
     isAnonymous: {
@@ -19,5 +19,9 @@ const postSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// postSchema.virtual('votes').get(function () {
+//   let votes = 0;
+//   this.resources['images'].forEach();
+// });
 const Post = mongoose.model('Post', postSchema);
 module.exports = Post;
